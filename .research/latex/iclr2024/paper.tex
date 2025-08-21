@@ -108,7 +108,7 @@ The first term is the standard noise-prediction loss, the second promotes sparsi
 The scalar budget is linearly projected to the model width and concatenated to both the prompt and timestep embeddings, making the denoiser itself compute-aware.
 
 \subsection{Hierarchical gating wrappers}
-For every residual or attention block a wrapper (i) samples \(g_{k}\), (ii) if \(g_{k}=1\) samples a channel mask \(m_{k}\) and applies it as multiplicative dropout, (iii) if \(g_{k}=0\) routes the skip connection. Timestep reuse is implemented inside the solver loop: when \(r_{t}=1\) the previous \(\hat{\varepsilon}\) is reused; otherwise the denoiser runs. All wrappers require roughly 30 lines of Python and introduce no architectural changes.
+For every residual or attention block a wrapper (i) samples \(g_{k}\), (ii) if \(g_{k}=1\) samples a channel mask \(m_{k}\) and applies it as multiplicative dropout, (iii) if \(g_{k}=0\) routes the skip connection. Timestep reuse is implemented inside the solver loop: when \(r_{t}=1\) the previous \hat{\varepsilon} is reused; otherwise the denoiser runs. All wrappers require roughly 30 lines of Python and introduce no architectural changes.
 
 \subsection{Policy network}
 A three-layer MLP (hidden size 512, \(\approx0.4\,\mathrm{M}\) parameters for DiT-XL) ingests timestep \(t\), budget \(b\), latent \(\ell_{2}\)-norm, variance, skewness, kurtosis and the norm of the prompt embedding. A single forward pass yields logits for all \(g_{k}\), \(m_{k}\) and \(r_{t}\) and costs \(0.1\,\mathrm{ms}\) on an A100.
@@ -150,7 +150,7 @@ Twelve values \(\mathcal{B}=\{0.05,0.10,\dots,1.0\}\). For every (model, \(b\)) 
 Quality: FID, CLIPScore and Inception Score via \texttt{torchmetrics}. Compute: analytic FLOP count validated by NVIDIA Profiler on 1\,\% of samples. Latency: CUDA events. Statistics: three independent seeds, 95\,\% confidence intervals and a Welch \emph{t}-test for significance.
 
 \subsection{Ablation study (Exp-2)}
-Five variants remove specific gating axes—Full (\(g+m+r\)), \(g\) only, \(g+m\), \(g+r\), \(m+r\)—and are fine-tuned for 50\,k steps. Budgets \(\{0.15,0.35,0.60\}\) are evaluated. Gate tensors are stored in HDF5 for heat-map visualisation.
+Five variants remove specific gating axes—Full (\(g+m+r\)), \(g\) only, \(g+m\), \(g+r\), \(m+r\)—and are fine-tuned for 50\,k steps. Budgets \{0.15,0.35,0.60\} are evaluated. Gate tensors are stored in HDF5 for heat-map visualisation.
 
 \subsection{Budget tracking and systems study (Exp-3)}
 Draw 2,000 random budgets, measure absolute error, and profile policy latency in a CUDA-synchronised loop. Trace the eight most frequent gate patterns to TorchScript and benchmark FPS on Jetson.
@@ -161,27 +161,27 @@ Draw 2,000 random budgets, measure absolute error, and profile policy latency in
 
 \textbf{Ablation (Exp-2).} Removing any single sparsity axis degrades quality. At \(b=0.20\) deleting channel masks increases FID by 0.22 (\(\approx33\,\%\)). Two-way ANOVA confirms a significant interaction between axis choice and budget (\(p<10^{-4}\)). Heat-maps show that landscape prompts trigger high timestep reuse whereas macro shots keep mid-level channels active, evidencing prompt adaptivity.
 
-\textbf{Budget tracking & overhead (Exp-3).} Mean absolute error between requested and realised budgets is 1.8\,\% and the 99th percentile 4.6\,\%, meeting the 2\,\%/5\,\% targets. The policy adds 0.14\,ms per call and contains 8,181 parameters in the toy run (0.4\,M in full DiT-XL). Ahead-of-time compilation of eight gate patterns lifts Jetson throughput from 1.20 to 1.56 FPS.
+\textbf{Budget tracking \& overhead (Exp-3).} Mean absolute error between requested and realised budgets is 1.8\,\% and the 99th percentile 4.6\,\%, meeting the 2\,\%/5\,\% targets. The policy adds 0.14\,ms per call and contains 8,181 parameters in the toy run (0.4\,M in full DiT-XL). Ahead-of-time compilation of eight gate patterns lifts Jetson throughput from 1.20 to 1.56 FPS.
 
 \textbf{Limitations.} Training still costs 48 GPU-hours; low-rank adapters could mitigate this. Budget control deteriorates slightly below \(b=0.05\) because the optimiser rarely visits such extremes. Experiments so far use \(256^{2}\) images; scaling to \(1024^{2}\) may require more sophisticated gate logging.
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\linewidth]{ images/pareto\_curve.pdf }
+\includegraphics[width=0.7\linewidth]{images/pareto_curve.pdf}
 \caption{Quality–compute Pareto frontier for CoCoDiff and baselines.}
 \label{fig:pareto}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\linewidth]{ images/ablation\_fid.pdf }
+\includegraphics[width=0.7\linewidth]{images/ablation_fid.pdf}
 \caption{FID impact of removing sparsity axes across budgets.}
 \label{fig:ablation}
 \end{figure}
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=0.7\linewidth]{ images/budget\_accuracy.pdf }
+\includegraphics[width=0.7\linewidth]{images/budget_accuracy.pdf}
 \caption{Absolute error between requested budget and realised compute.}
 \label{fig:budget}
 \end{figure}
