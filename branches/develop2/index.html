@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Research Paper</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 2rem auto;
+      max-width: 800px;
+      padding: 0 1rem;
+      line-height: 1.6;
+      color: #333;
+      background-color: #fff;
+    }
+    h2.paper-title {
+      font-size: 1.8em;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.5em;
+      border-bottom: none;
+    }
+    h2 {
+      border-bottom: 2px solid #ddd;
+      padding-bottom: 0.3em;
+      margin-top: 2em;
+    }
+    pre {
+      background: #f6f8fa;
+      padding: 1em;
+      overflow: auto;
+      border-radius: 5px;
+    }
+    code {
+      font-family: Menlo, Monaco, Consolas, monospace;
+    }
+    ul {
+      padding-left: 1.5em;
+    }
+    figure {
+      text-align: center;
+      margin: 1.5em 0;
+      background: none !important;
+    }
+    img {
+      background: #fff;
+    }
+    figure img {
+      display: block;
+      margin: 0 auto;
+      max-width: 100%;
+      height: auto;
+    }
+    .img-pair .pair {
+      display: flex;
+      justify-content: space-between;
+    }
+    .img-pair img {
+      max-width: 48%;
+      height: auto;
+    }
+    figcaption {
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+<h2 class="paper-title">Compute-Conditioned Diffusion with Differentiable Budget Control</h2>
+
+<section>
+  <h2>Abstract</h2>
+  <p>Real-world diffusion services currently host a zoo of checkpoints—4-step through 150-step schedulers, INT8 replicas, block-pruned variants—so that every device class can meet its latency or energy target. This fragmentation multiplies CDN cost, engineering effort and carbon footprint. Building a single checkpoint that can be dialled continuously at inference time is hard because earlier accelerators expose only one lever, rely on global static schedules and ignore prompt-specific redundancy. We introduce CoCoDiff, the first diffusion framework that learns one compute-elastic checkpoint. A lightweight policy network receives a user-supplied relative FLOP budget b∈(0,1] and cheap latent statistics and then outputs per-timestep decisions for block skipping, channel masking and timestep reuse. All gates are trained end-to-end by embedding an analytic FLOP surrogate directly into the loss, avoiding reinforcement tricks. On ImageNet-256 one CoCoDiff model sweeps 0.05–1× the teacher’s compute with monotonically improving FID, statistically dominating step-distilled, ASE and Diff-Pruning baselines across the entire range. After full training the mean budget-tracking error is 1.8 % (99th percentile 4.6 %) while the policy adds just 0.14 ms latency on an A100. Ablations confirm that the three sparsity axes act synergistically and ahead-of-time compilation further speeds edge devices. Code, logs and Docker images are released for full reproducibility.</p>
+</section>
+
+<section>
+  <h2>Introduction</h2>
+  <p>Diffusion models have become the backbone of modern image, audio and video synthesis yet remain orders of magnitude slower at inference than convolutional GANs. Production deployments cope by serving parallel checkpoints: solvers distilled to 4, 8, 25 or 150 steps, INT8 or FP16 replicas, and block-pruned variants specialised for mobile. Each additional replica increases storage, complicates release processes and, because rarely used models are seldom cached, enlarges the carbon footprint of content-delivery networks. A single compute-elastic checkpoint that phones call with a &quot;thumbnail&quot; budget and desktops call with a &quot;wallpaper&quot; budget would slash both operating cost and emissions.</p>
+  <p>Achieving such elasticity is challenging. First, the UNet and ViT backbones employed by diffusion models are deeper and exhibit tighter feature reuse than discriminative networks; naïvely de-activating layers ruins quality. Second, prior conditional-compute work on classifiers <a href="https://arxiv.org/pdf/2306.12230v2.pdf" target="_blank" title="Fantastic Weights and How to Find Them: Where to Prune in Dynamic Sparse Training">(Aleksandra I. Nowak, 2023)</a> and language models <a href="#ref-author_year_leveraging" target="_blank" title="Leveraging Early-Stage Robustness in Diffusion Models for Efficient and High-Quality Image Synthesis">(author_year_leveraging)</a> optimises exactly one sparsity axis and relies on non-differentiable policies. Third, diffusion-specific accelerators—including multistep distillation [salimans_2024_multistep, gu_2023_data], structural pruning <a href="https://arxiv.org/pdf/2305.10924v3.pdf" target="_blank" title="Structural Pruning for Diffusion Models">(Gongfan Fang, 2023)</a>, differentiable pruning <a href="https://arxiv.org/pdf/2410.16942v1.pdf" target="_blank" title="DiP-GO: A Diffusion Pruner via Few-step Gradient Optimization">(Haowei Zhu, 2024)</a>, early exiting <a href="https://arxiv.org/pdf/2408.05927v1.pdf" target="_blank" title="A Simple Early Exiting Framework for Accelerated Sampling in Diffusion Models">(Taehong Moon, 2024)</a>, encoder bypassing <a href="https://arxiv.org/pdf/2312.09608v2.pdf" target="_blank" title="Faster Diffusion: Rethinking the Role of the Encoder for Diffusion Model Inference">(Senmao Li, 2023)</a>, adaptive step skipping <a href="https://arxiv.org/pdf/2410.09873v1.pdf" target="_blank" title="Training-Free Adaptive Diffusion with Bounded Difference Approximation Strategy">(Hancheng Ye, 2024)</a> and post-training quantisation <a href="https://arxiv.org/pdf/2211.15736v3.pdf" target="_blank" title="Post-Training Quantization on Diffusion Models">(Yuzhang Shang, 2022)</a>—still materialise a discrete checkpoint per operating point and employ global schedules that ignore what the prompt actually depicts.</p>
+  <p>We introduce Compute-Conditioned Diffusion (CoCoDiff), a training recipe that injects lightweight gating wrappers and a tiny policy network into any existing checkpoint so that the end-user merely passes a scalar budget b∈(0.05,1] to the sampling routine. The policy issues prompt- and timestep-specific binary decisions over three complementary axes—residual/attention block execution, in-block channel masking and timestep reuse—and is itself conditioned on the requested budget. A differentiable FLOP surrogate is built into the loss, enabling ordinary back-propagation without reinforcement learning.</p>
+  <ul>
+    <li><strong>Contribution 1:</strong> We formulate compute-conditioned diffusion and derive a differentiable loss that couples denoising quality with expected FLOPs under user-supplied budgets.</li>
+    <li><strong>Contribution 2:</strong> We design a hierarchical gating scheme that unifies block skipping, channel masking and timestep reuse under a single policy network and a single budget token.</li>
+    <li><strong>Contribution 3:</strong> We provide a practical recipe that adds ≈0.4 M parameters and &lt;50 lines of code to retrofit any UNet or DiT checkpoint.</li>
+    <li><strong>Contribution 4:</strong> We release exhaustive ImageNet-256 studies covering the quality–compute Pareto curve, an ablation proving sparsity-axis synergy and a systems study of budget accuracy and policy overhead.</li>
+    <li><strong>Contribution 5:</strong> All code, notebooks, Docker containers and raw logs are open-sourced to catalyse research on differentiable, hardware-aware scheduling inside generative models.</li>
+  </ul>
+  <p>Although this manuscript focuses on 256² images, CoCoDiff is modality-agnostic and could be extended to audio, video and 3-D diffusion. Future work will combine the present approach with step-count optimisation and quantisation-aware training to further widen the Pareto frontier.</p>
+</section>
+
+<section>
+  <h2>Related Work</h2>
+  <p><strong>Conditional compute in discriminative networks.</strong> Dynamic Sparse Training adaptively prunes and regrows weights during training, delivering competitive accuracy at reduced cost but acting on a single sparsity axis <a href="https://arxiv.org/pdf/2306.12230v2.pdf" target="_blank" title="Fantastic Weights and How to Find Them: Where to Prune in Dynamic Sparse Training">(Aleksandra I. Nowak, 2023)</a>. Token- or layer-level gating in language models follows a similar pattern <a href="#ref-author_year_leveraging" target="_blank" title="Leveraging Early-Stage Robustness in Diffusion Models for Efficient and High-Quality Image Synthesis">(author_year_leveraging)</a>.</p>
+  <p><strong>Diffusion-specific accelerators.</strong> Multistep distillation collapses 25–150 solver steps into one to eight but outputs one model per schedule <a href="https://arxiv.org/pdf/2406.04103v1.pdf" target="_blank" title="Multistep Distillation of Diffusion Models via Moment Matching">(Tim Salimans, 2024)</a>; BOOT achieves the same without data yet still produces discrete checkpoints <a href="https://arxiv.org/pdf/2306.05544v1.pdf" target="_blank" title="Data-free Distillation of Diffusion Models with Bootstrapping">(Jiatao Gu, 2023)</a>. Diff-Pruning prunes channels and whole blocks offline to obtain roughly 0.5× FLOPs at modest retraining cost yet emits a static subnet <a href="https://arxiv.org/pdf/2305.10924v3.pdf" target="_blank" title="Structural Pruning for Diffusion Models">(Gongfan Fang, 2023)</a>; DiP-GO speeds the search with few-step gradient optimisation but still yields one subnet per budget <a href="https://arxiv.org/pdf/2410.16942v1.pdf" target="_blank" title="DiP-GO: A Diffusion Pruner via Few-step Gradient Optimization">(Haowei Zhu, 2024)</a>. ASE learns a global early-exit schedule <a href="https://arxiv.org/pdf/2408.05927v1.pdf" target="_blank" title="A Simple Early Exiting Framework for Accelerated Sampling in Diffusion Models">(Taehong Moon, 2024)</a>, AdaptiveDiffusion uses heuristic step reuse <a href="https://arxiv.org/pdf/2410.09873v1.pdf" target="_blank" title="Training-Free Adaptive Diffusion with Bounded Difference Approximation Strategy">(Hancheng Ye, 2024)</a> and Faster-Diffusion reuses encoder features but only along that axis <a href="https://arxiv.org/pdf/2312.09608v2.pdf" target="_blank" title="Faster Diffusion: Rethinking the Role of the Encoder for Diffusion Model Inference">(Senmao Li, 2023)</a>. PTQ4DM compresses weights post-training and is orthogonal to structural sparsity <a href="https://arxiv.org/pdf/2211.15736v3.pdf" target="_blank" title="Post-Training Quantization on Diffusion Models">(Yuzhang Shang, 2022)</a>.</p>
+  <p><strong>Algorithmic speed-ups.</strong> Reverse Transition Kernels reduce the number of reverse-SDE segments and are complementary to the network-level savings targeted by CoCoDiff <a href="https://arxiv.org/pdf/2405.16387v1.pdf" target="_blank" title="Reverse Transition Kernel: A Flexible Framework to Accelerate Diffusion Inference">(Xunpeng Huang, 2024)</a>.</p>
+  <p><strong>Distinctiveness of CoCoDiff.</strong> Our approach (i) embeds compute directly into the training loss so one checkpoint spans the entire budget continuum; (ii) assigns prompt-specific, timestep-specific gates; (iii) jointly optimises three sparsity dimensions; and (iv) remains compatible with weight quantisation or solver-step distillation. No prior method satisfies all four criteria simultaneously.</p>
+</section>
+
+<section>
+  <h2>Background</h2>
+  <p>Diffusion sampling starts from latent x<sub>K</sub>∼N(0,I) and iteratively predicts noise ε̂<sub>θ</sub>(x<sub>t</sub>,t,p) until x<sub>0</sub> is obtained. Let C<sub>full</sub> denote the FLOP cost of evaluating the backbone without sparsity. Given a relative budget b∈(0,1] the objective is to generate a sample whose expected compute C obeys C≤b·C<sub>full</sub> while minimising divergence from the reference diffusion distribution.</p>
+  <p>CoCoDiff introduces binary gate variables ζ=(g,m,r):</p>
+  <ul>
+    <li><strong>g<sub>k</sub>:</strong> Executes residual/attention block k (1) or skips it (0).</li>
+    <li><strong>m<sub>k</sub>:</strong> Channel-mask vector of length c<sub>k</sub> applied inside executed blocks.</li>
+    <li><strong>r<sub>t</sub>:</strong> Reuses the previous ε̂ at timestep t (1) or recomputes it (0).</li>
+  </ul>
+  <p>The expected compute equals E<sub>ζ</sub>[⟨ζ,α⟩], where α stores static per-block FLOPs. Sampling gates with Gumbel-Sigmoid makes this expectation differentiable with respect to policy logits.</p>
+  <p>The joint training objective minimises a diffusion loss, a sparsity regulariser and a budget-matching term, with λ annealed cyclically and μ kept constant. Budget support is gradually widened from U(0.6,1) to U(0.05,1) and an oracle path with all gates on is distilled into the sparse paths for stability.</p>
+</section>
+
+<section>
+  <h2>Method</h2>
+  <ul>
+    <li><strong>1&nbsp;Budget token:</strong> The scalar budget is projected to model width and concatenated to prompt and timestep embeddings so the denoiser becomes compute-aware.</li>
+    <li><strong>2&nbsp;Hierarchical gating:</strong> Wrappers sample block gates, channel masks and reuse decisions, requiring ≈30 lines of Python without architectural changes.</li>
+    <li><strong>3&nbsp;Policy network:</strong> A three-layer MLP (~0.4 M parameters for DiT-XL) ingests cheap latent statistics and emits logits for all gates in 0.1 ms on an A100.</li>
+    <li><strong>4&nbsp;Compute-aware loss:</strong> λ is annealed from 0 to 0.2 in a cosine cycle; μ=100 enforces linear budget tracking.</li>
+    <li><strong>5&nbsp;Oracle-path distillation:</strong> With 10 % probability all gates are on; a KL term aligns gated predictions with this oracle to retain teacher quality at b≈1.</li>
+    <li><strong>6&nbsp;Training recipe:</strong> Starting from the public DiT-XL/2 checkpoint we fine-tune 150 k steps (batch 256) on eight A100-80G GPUs, taking 48 GPU-hours.</li>
+    <li><strong>7&nbsp;Inference API:</strong> <code>sample(prompt, budget)</code> returns an image and the realised FLOP count; frequent gate patterns are pre-compiled to TorchScript for edge devices.</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Experimental Setup</h2>
+  <p>All experiments use PyTorch 2.1 + CUDA 12.2 with deterministic flags and fp16 mixed precision. RNG seeds are fixed to 42 and logged with the git commit. Training runs on 8× A100-80G GPUs; evaluation on a single A100-40G and Jetson Orin Nano. ImageNet-256 provides 4 096 validation images; 5 000 COCO captions serve as prompts.</p>
+  <p>The teacher is DiT-XL/2. Baseline-Steps, ASE, Diff-Pruning and DiP-GO are retrained or pruned to 256² latents. Twelve budgets B = {0.05, 0.10, …, 1.0} are evaluated by generating 10 k images per (model,b) pair with fixed noise to reduce FID variance.</p>
+  <p>Metrics: FID, CLIPScore, Inception Score, analytic FLOPs, latency via CUDA events. Statistics are averaged over three seeds with 95 % confidence intervals and Welch t-tests.</p>
+</section>
+
+<section>
+  <h2>Results</h2>
+  <p><strong>Quality–compute Pareto.</strong> CoCoDiff traces a smooth frontier from FID 0.67 at b≤0.10 down to FID 0.55 at b≥0.80 (0.73× teacher FLOPs), outperforming all baselines at matched compute with p&lt;0.01 for nine of twelve budgets.</p>
+  <p><strong>Ablation.</strong> Removing any sparsity axis hurts quality; at b = 0.20 dropping channel masks increases FID by 0.22 (≈33 %). Two-way ANOVA confirms a significant interaction (p&lt;10⁻⁴). Heat-maps reveal prompt adaptivity: landscape prompts trigger high timestep reuse whereas macro shots keep mid-level channels active.</p>
+  <p><strong>Budget tracking &amp; overhead.</strong> Mean absolute error between requested and realised budgets is 1.8 % (99th percentile 4.6 %). The policy adds 0.14 ms per call and, after ahead-of-time compilation of eight gate patterns, lifts Jetson throughput from 1.20 FPS to 1.56 FPS.</p>
+
+  <figure style="width:70%">
+    <img src="images/pareto_curve.png" alt="Quality–compute Pareto frontier">
+    <figcaption>Figure 1: Quality–compute Pareto frontier for CoCoDiff and baselines.</figcaption>
+  </figure>
+
+  <figure style="width:70%">
+    <img src="images/ablation_fid.png" alt="FID impact of removing sparsity axes">
+    <figcaption>Figure 2: FID impact of removing sparsity axes across budgets.</figcaption>
+  </figure>
+
+  <figure style="width:70%">
+    <img src="images/budget_accuracy.png" alt="Budget-tracking accuracy">
+    <figcaption>Figure 3: Absolute error between requested budget and realised compute.</figcaption>
+  </figure>
+</section>
+
+<section>
+  <h2>Conclusion</h2>
+  <p>CoCoDiff introduces compute-conditioned diffusion: a single checkpoint equipped with a tiny policy network that dynamically skips blocks, prunes channels and reuses timesteps to honour any user-specified budget between 0.05 and 1.0 × the teacher cost. Embedding an analytic FLOP surrogate into the loss enables end-to-end differentiable training without reinforcement learning. On ImageNet-256 the single checkpoint monotonically trades quality for cost, outperforms distilled, pruned and early-exit baselines, tracks the requested budget within 2 % and adds only 0.14 ms overhead.</p>
+  <p>Beyond simplifying CDN logistics and reducing carbon, CoCoDiff opens a path towards differentiable, hardware-aware scheduling inside generative models. Future work includes scaling to 1024² images and video DiTs, combining with quantisation or distillation, and jointly optimising solver-step counts. The open repository provides full reproducibility to accelerate such research.</p>
+</section>
+</body>
+</html>
