@@ -1,0 +1,10 @@
+{
+  "research_topic": "I want to speed up the diffusion model.",
+  "queries": [
+    "fast diffusion sampling",
+    "diffusion model acceleration",
+    "efficient diffusion inference",
+    "diffusion distillation",
+    "diffusion sparsity pruning"
+  ]
+}
