@@ -384,6 +384,38 @@
       }
     }
   ],
+  "reference_research_study_list": [
+    {
+      "title": "Faster high-accuracy log-concave sampling via algorithmic warm starts"
+    },
+    {
+      "title": "Structured denoising diffusion models in discrete state-spaces"
+    },
+    {
+      "title": "Nearly d-linear convergence bounds for diffusion models via stochastic localization"
+    },
+    {
+      "title": "Generative modeling with denoising auto-encoders and Langevin sampling"
+    },
+    {
+      "title": "Probability flow solution of the Fokker-Planck equation"
+    },
+    {
+      "title": "A note on the isoperimetric constant"
+    },
+    {
+      "title": "Improved analysis of score-based generative modeling: User-friendly bounds under minimal smoothness assumptions"
+    },
+    {
+      "title": "The probability flow ODE is provably fast"
+    },
+    {
+      "title": "Sampling is as easy as learning the score: theory for diffusion models with minimal data assumptions"
+    },
+    {
+      "title": "Improved analysis for a proximal algorithm for sampling"
+    }
+  ],
   "new_method": {
     "method": "Title: CoCoDiff – Compute-Conditioned Diffusion with Differentiable Budget Control\n\nMotivation\n1. \"One-size-fits-all\" diffusion checkpoints force providers to host a zoo of models (4-step through 150-step, INT8, block-pruned, etc.); every extra variant multiplies CDN cost and carbon.  A single compute-elastic checkpoint would collapse this fragmentation.\n2. Existing accelerators each tune exactly one lever (fewer steps, fixed block skip, post-training INT8).  No previous method learns *joint, per-prompt* policies over *multiple* sparsity axes *during* training.\n3. Conditional compute has yielded 10–40 % energy gains in deep classifiers and LLMs; diffusion U-Nets/ViTs are deeper and more redundant, yet conditional compute for them is unexplored.\n\nMethodology\nCoCoDiff trains a diffusion backbone and a lightweight policy network end-to-end so that the user can dial a target FLOP budget b∈(0,1] at sample time.\n\nA. Budget token.  Concatenate a 1-D scalar b to the prompt embedding and timestep embedding.  Serves as a soft instruction to both the backbone *and* the policy.\n\nB. Hierarchical dynamic sparsity at three granularities.\n   • Block gate g_k∈{0,1}.  Skip or execute residual/attention block k.\n   • Channel mask m_k∈{0,1}^{c_k}.  Keep/prune channels inside executed blocks.\n   • Timestep-reuse bit r_t∈{0,1}.  Re-use previous ε̂ when ∥x_t−x_{t+1}∥ is small.  Unlike AdaptiveDiffusion, r_t is *learned* not heuristic.\n   Wrapper implementation: one Python line per module; skip connections guarantee weight reuse.\n\nC. Budget policy π_ϕ (~0.4 M params).  Inputs each denoise step: (t, b) + cheap latent stats (ℓ₂-norm, variance, skew, kurtosis) + prompt-embedding norm.  3-layer MLP outputs logits for {g_k}, {m_k}, r_t.  Forward pass <0.1 ms on A100; negligible versus U-Net call.\n\nD. Compute-aware loss\n   L = L_diff  + λ·FLOPs(g,m,r) + μ·|E[C|b]/C_full − b|²\n   where FLOPs(·) is analytic dot-product between static per-block costs and sampled gates.  λ is cyclically annealed so the optimiser visits both sparse and dense regimes each epoch; curriculum on b from U[0.6,1] → U[0.05,1] stabilises extremes.\n\nE. Oracle-path regulariser.  With prob. p=0.1 force *all* gates ON and distil gated path onto this oracle via KL(ε̂_full ∥ ε̂_gated).  Prevents quality drift and guarantees that b≈1 reproduces teacher performance.\n\nF. Training recipe.\n   1. Start from any public checkpoint (e.g.\n      SD-1.5 UNet or DiT-XL/2).\n   2. Insert ≈30 gating wrappers, add policy MLP and budget token (<30 LoC).\n   3. Fine-tune 150 k steps on 256² images (8×A100, 48 GPU-hours; AdamW 1e-5).\n   4. Ship *one* .ckpt.  API: sample(prompt, budget=0.3).\n\nG. Inference-time compilation (optional).  For mobile/edge, export K=8 most common gate patterns discovered during validation and ahead-of-time trace them to TorchScript so the run-time control-flow overhead disappears (static graph).\n\nH. Compatibility hooks.\n   Because π_ϕ observes *activations* only, any post-training technique (PTQ to INT8/FP8, multistep distillation, EMA weight averaging) can be applied once to the final weights and the policy instantly inherits the extra speed-up.\n\nKey differences to prior work\n• First *continuous* compute dial: one checkpoint spans 0.05–1.0× FLOPs; all prior pruning/distillation delivers one model per regime.\n• First *joint* optimiser over three sparsity axes (step reuse, block skipping, channel masks) trained end-to-end.  ASE is fixed-schedule, Diff-Pruning & DiP-GO prune channels/blocks only, PTQ4DM quantises weights only.\n• Gates are *per-prompt* and *per-timestep*; ASE and Faster-Diffusion use global static schedules.\n• FLOP term embedded directly in training loss instead of post-hoc fine-tune.\n\nExpected Impact\n1. Edge & cloud uniformity: phones request b=0.1 for thumbnails (<0.5 s); desktops b=0.8 for 4 K wallpapers—all from the *same* file.\n2. Projection on DiT-XL/2 ImageNet-256:\n   • FID ≈ 5.0 at 0.5× FLOPs.\n   • FID ≈ 8.4 at 0.15× FLOPs (≈25 % better than ASE at equal cost).\n3. Cascade with 8-step INT8 sampler ⇒ ≈8× wall-clock speed and 4× size shrink while hosting a single checkpoint—ideal for CDN cost, carbon-aware scheduling, and offline creative tools.\n4. Modality-agnostic: swap embedding adaptor → compute-elastic audio, video, or 3-D diffusion generators.\n5. Opens new research on *differentiable, hardware-aware scheduling* inside generative models, bridging systems and modelling communities.",
     "experimental_design": {
