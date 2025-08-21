@@ -1,0 +1,17 @@
+{
+  "timestamp": "2025-08-21 08:20:07 UTC",
+  "device": "cpu",
+  "model_params": 19200,
+  "policy_params": 8181,
+  "experiments_completed": [
+    "pareto_curve",
+    "ablation_study",
+    "budget_tracking"
+  ],
+  "output_files": [
+    "pareto_curve.pdf",
+    "ablation_fid.pdf",
+    "budget_accuracy.pdf"
+  ],
+  "status_enum": "stopped"
+}
