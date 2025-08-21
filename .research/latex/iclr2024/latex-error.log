@@ -353,14 +353,18 @@ Package natbib Warning: Citation `shang_2022_post' on page 2 undefined on input
 Package natbib Warning: Citation `huang_2024_reverse' on page 2 undefined on in
 put line 77.
 
-[2] (/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1pcr.fd) [3] [4]
-! Misplaced alignment tab character &.
-<argument> Budget tracking &
-                             overhead (Exp-3).
-l.164 \textbf{Budget tracking & overhead (Exp-3).}
-                                                   Mean absolute error betwe...
+[2]
 
+! Package amsmath Error: \hat allowed only in math mode.
 
+See the amsmath package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.111 ...(r_{t}=1\) the previous \hat{\varepsilon}
+                                                   is reused; otherwise the ...
+
+(/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1pcr.fd) [3] [4]
 Underfull \vbox (badness 10000) has occurred while \output is active [5 <./imag
 es/pareto_curve.pdf> <./images/ablation_fid.pdf>]
 
@@ -394,7 +398,7 @@ sr/share/texlive/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texl
 ive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/
 fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw
 /times/utmri8a.pfb>
-Output written on paper.pdf (6 pages, 203881 bytes).
+Output written on paper.pdf (6 pages, 204518 bytes).
 Transcript written on paper.log.
 This is BibTeX, Version 0.99d (TeX Live 2023/Debian)
 The top-level auxiliary file: paper.aux
@@ -784,14 +788,18 @@ Package natbib Warning: Citation `shang_2022_post' on page 2 undefined on input
 Package natbib Warning: Citation `huang_2024_reverse' on page 2 undefined on in
 put line 77.
 
-[2] (/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1pcr.fd) [3] [4]
-! Misplaced alignment tab character &.
-<argument> Budget tracking &
-                             overhead (Exp-3).
-l.164 \textbf{Budget tracking & overhead (Exp-3).}
-                                                   Mean absolute error betwe...
+[2]
 
+! Package amsmath Error: \hat allowed only in math mode.
 
+See the amsmath package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.111 ...(r_{t}=1\) the previous \hat{\varepsilon}
+                                                   is reused; otherwise the ...
+
+(/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1pcr.fd) [3] [4]
 Underfull \vbox (badness 10000) has occurred while \output is active [5 <./imag
 es/pareto_curve.pdf> <./images/ablation_fid.pdf>]
 
@@ -821,7 +829,7 @@ sr/share/texlive/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texl
 ive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/
 fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw
 /times/utmri8a.pfb>
-Output written on paper.pdf (7 pages, 209511 bytes).
+Output written on paper.pdf (7 pages, 210153 bytes).
 Transcript written on paper.log.
 This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023/Debian) (preloaded format=pdflatex)
  restricted \write18 enabled.
@@ -1093,15 +1101,18 @@ s been generated with the most recent feature set (\pgfplotsset{compat=1.18}).
 (/usr/share/texlive/texmf-dist/tex/latex/microtype/mt-msb.cfg)
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1ptm.fd) [1{/var/lib/texmf/fo
 nts/map/pdftex/updmap/pdftex.map}{/usr/share/texlive/texmf-dist/fonts/enc/dvips
-/base/8r.enc}] [2] (/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1pcr.fd)
-[3] [4]
-! Misplaced alignment tab character &.
-<argument> Budget tracking &
-                             overhead (Exp-3).
-l.164 \textbf{Budget tracking & overhead (Exp-3).}
-                                                   Mean absolute error betwe...
+/base/8r.enc}] [2]
 
+! Package amsmath Error: \hat allowed only in math mode.
 
+See the amsmath package documentation for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.111 ...(r_{t}=1\) the previous \hat{\varepsilon}
+                                                   is reused; otherwise the ...
+
+(/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1pcr.fd) [3] [4]
 Underfull \vbox (badness 10000) has occurred while \output is active [5 <./imag
 es/pareto_curve.pdf> <./images/ablation_fid.pdf>] (./paper.bbl [6 <./images/bud
 get_accuracy.pdf>]) [7] (./paper.aux) )
@@ -1118,5 +1129,5 @@ sr/share/texlive/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texl
 ive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-dist/
 fonts/type1/urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw
 /times/utmri8a.pfb>
-Output written on paper.pdf (7 pages, 209612 bytes).
+Output written on paper.pdf (7 pages, 210401 bytes).
 Transcript written on paper.log.
