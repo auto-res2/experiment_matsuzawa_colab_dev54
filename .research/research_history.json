@@ -6,5 +6,52 @@
     "efficient diffusion inference",
     "diffusion distillation",
     "diffusion sparsity pruning"
+  ],
+  "research_study_list": [
+    {
+      "title": "Multistep Distillation of Diffusion Models via Moment Matching"
+    },
+    {
+      "title": "A Simple Early Exiting Framework for Accelerated Sampling in Diffusion Models"
+    },
+    {
+      "title": "Reverse Transition Kernel: A Flexible Framework to Accelerate Diffusion Inference"
+    },
+    {
+      "title": "Faster Diffusion: Rethinking the Role of the Encoder for Diffusion Model Inference"
+    },
+    {
+      "title": "Leveraging Early-Stage Robustness in Diffusion Models for Efficient and High-Quality Image Synthesis"
+    },
+    {
+      "title": "Post-Training Quantization on Diffusion Models"
+    },
+    {
+      "title": "A Simple Early Exiting Framework for Accelerated Sampling in Diffusion Models"
+    },
+    {
+      "title": "Reverse Transition Kernel: A Flexible Framework to Accelerate Diffusion Inference"
+    },
+    {
+      "title": "Training-Free Adaptive Diffusion with Bounded Difference Approximation Strategy"
+    },
+    {
+      "title": "Multistep Distillation of Diffusion Models via Moment Matching"
+    },
+    {
+      "title": "Data-free Distillation of Diffusion Models with Bootstrapping"
+    },
+    {
+      "title": "Efficient Dataset Distillation via Minimax Diffusion"
+    },
+    {
+      "title": "Structural Pruning for Diffusion Models"
+    },
+    {
+      "title": "DiP-GO: A Diffusion Pruner via Few-step Gradient Optimization"
+    },
+    {
+      "title": "Fantastic Weights and How to Find Them: Where to Prune in Dynamic Sparse Training"
+    }
   ]
 }
