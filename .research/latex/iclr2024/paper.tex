@@ -108,7 +108,7 @@ The first term is the standard noise-prediction loss, the second promotes sparsi
 The scalar budget is linearly projected to the model width and concatenated to both the prompt and timestep embeddings, making the denoiser itself compute-aware.
 
 \subsection{Hierarchical gating wrappers}
-For every residual or attention block a wrapper (i) samples \(g_{k}\), (ii) if \(g_{k}=1\) samples a channel mask \(m_{k}\) and applies it as multiplicative dropout, (iii) if \(g_{k}=0\) routes the skip connection. Timestep reuse is implemented inside the solver loop: when \(r_{t}=1\) the previous \hat{\varepsilon} is reused; otherwise the denoiser runs. All wrappers require roughly 30 lines of Python and introduce no architectural changes.
+For every residual or attention block a wrapper (i) samples \(g_{k}\), (ii) if \(g_{k}=1\) samples a channel mask \(m_{k}\) and applies it as multiplicative dropout, (iii) if \(g_{k}=0\) routes the skip connection. Timestep reuse is implemented inside the solver loop: when \(r_{t}=1\) the previous \(\hat{\varepsilon}\) is reused; otherwise the denoiser runs. All wrappers require roughly 30 lines of Python and introduce no architectural changes.
 
 \subsection{Policy network}
 A three-layer MLP (hidden size 512, \(\approx0.4\,\mathrm{M}\) parameters for DiT-XL) ingests timestep \(t\), budget \(b\), latent \(\ell_{2}\)-norm, variance, skewness, kurtosis and the norm of the prompt embedding. A single forward pass yields logits for all \(g_{k}\), \(m_{k}\) and \(r_{t}\) and costs \(0.1\,\mathrm{ms}\) on an A100.
