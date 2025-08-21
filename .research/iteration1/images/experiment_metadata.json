@@ -1,6 +1,6 @@
 {
-  "timestamp": "2025-08-21 08:20:07 UTC",
-  "device": "cpu",
+  "timestamp": "2025-08-21 08:24:42 UTC",
+  "device": "cuda",
   "model_params": 19200,
   "policy_params": 8181,
   "experiments_completed": [
